@@ -297,13 +297,17 @@
     };
 
     $scope.runParagraph = function(data) {
-      websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
-                                   data, $scope.paragraph.config, $scope.paragraph.settings.params);
-      $scope.originalText = angular.copy(data);
-      $scope.dirtyText = undefined;
+      if (data.indexOf('drop') !== -1 || data.indexOf('delete') !== -1)  {
+        alert('Cannot execute drop or delete statement...');
+      } else {
+        websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
+                                     data, $scope.paragraph.config, $scope.paragraph.settings.params);
+        $scope.originalText = angular.copy(data);
+        $scope.dirtyText = undefined;
 
-      if (editorSetting.editOnDblClick) {
-        closeEditorAndOpenTable();
+        if (editorSetting.editOnDblClick) {
+          closeEditorAndOpenTable();
+        }
       }
     };
 
