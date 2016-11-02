@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.utils;
 
+import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.Subject;
@@ -24,6 +25,7 @@ import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.realm.KsRealm;
 
 import java.net.InetAddress;
 import java.net.URI;
@@ -102,7 +104,21 @@ public class SecurityUtils {
         String name = realm.getName();
         if (name.equals("iniRealm")) {
           allRoles = ((IniRealm) realm).getIni().get("roles");
-          break;
+
+          if (allRoles != null) {
+            Iterator it = allRoles.entrySet().iterator();
+            while (it.hasNext()) {
+              Map.Entry pair = (Map.Entry) it.next();
+              if (subject.hasRole((String) pair.getKey())) {
+                roles.add((String) pair.getKey());
+              }
+            }
+          } else if (name.equals("ks Realm")) {
+            AuthorizationInfo info = ((KsRealm) realm).doGetAuthorizationInfo(
+              subject.getPrincipals());
+            roles.addAll(info.getRoles());
+            break;
+          }
         }
       }
 
