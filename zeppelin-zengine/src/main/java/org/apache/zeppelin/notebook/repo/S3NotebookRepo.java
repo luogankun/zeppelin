@@ -29,6 +29,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -106,7 +108,11 @@ public class S3NotebookRepo implements NotebookRepo {
     }
     else {
       // regular S3
-      this.s3client = new AmazonS3Client(credentialsProvider);
+      ClientConfiguration awsConf = new ClientConfiguration();
+      boolean secureConnections = conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_S3_SSL);
+      awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);
+      awsConf.withSignerOverride(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_SIGNERTYPE));
+      this.s3client = new AmazonS3Client(credentialsProvider, awsConf);
     }
 
     // set S3 endpoint to use
